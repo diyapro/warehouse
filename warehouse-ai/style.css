@@ -1,0 +1,122 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #f4f7fb;
+}
+
+/* HEADER */
+.header {
+    background: linear-gradient(90deg, #0a4da2, #0f6fdc);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* KPI CARDS */
+.kpi-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    padding: 20px;
+}
+
+.kpi {
+    padding: 20px;
+    color: white;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.kpi span {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.red { background: #e74c3c; }
+.orange { background: #f39c12; }
+.green { background: #27ae60; }
+.teal { background: #16a085; }
+
+/* MAIN GRID */
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    padding: 0 20px;
+}
+
+/* BOTTOM GRID */
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* CARDS */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* ALERT */
+.alert {
+    border-left: 6px solid #e74c3c;
+}
+
+.danger-btn {
+    margin-top: 15px;
+    background: #e74c3c;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background: #eef2f7;
+    text-align: left;
+}
+
+button {
+    margin-top: 12px;
+    background: #0a4da2;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* CHART */
+.chart-placeholder {
+    height: 250px;
+    background: #eef2f7;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    margin-top: 10px;
+}
