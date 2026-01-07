@@ -1,5 +1,54 @@
-node_modules/
+# =========================
+# Python Virtual Environment
+# =========================
+venv/
+.env/
+.envrc/
+
+# =========================
+# Python cache / compiled
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+
+# =========================
+# Jupyter / IPython
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# OS generated files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Environment secrets
+# =========================
 .env
-node_modules/
-package-lock.json
-package.json
+.env.*
+
+# =========================
+# Model / large binaries (optional)
+# =========================
+*.pkl
+*.joblib
+
+# =========================
+# Build / Distribution
+# =========================
+build/
+dist/
+*.egg-info/

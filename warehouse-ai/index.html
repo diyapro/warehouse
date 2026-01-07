@@ -1,80 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Warehouse Restock Prediction Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Inventory Demand Predictor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f7fa;
+    }
+
+    nav {
+      background: #1f2937;
+      color: #fff;
+      padding: 14px 24px;
+      display: flex;
+      gap: 20px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    nav span {
+      cursor: pointer;
+      opacity: 0.8;
+    }
+
+    nav span.active {
+      text-decoration: underline;
+      opacity: 1;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-bottom: 16px;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    label {
+      font-size: 13px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      grid-column: span 3;
+      padding: 12px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 15px;
+      white-space: pre-wrap;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="header">
-    <h1>Warehouse Restock Prediction Dashboard</h1>
-    <div class="profile">Admin</div>
-</header>
+<nav>
+  <span id="tab-single" class="active">Single Predict</span>
+  <span id="tab-bulk">Bulk Predict</span>
+</nav>
 
-<!-- KPI CARDS -->
-<section class="kpi-container">
-    <div class="kpi red">Low Stock Items<br><span>12</span></div>
-    <div class="kpi orange">Forecasted Stockouts<br><span>5</span></div>
-    <div class="kpi green">Avg Turnover Ratio<br><span>8.5</span></div>
-    <div class="kpi teal">Avg Lead Time (Days)<br><span>6.2</span></div>
-</section>
+<div class="container">
 
-<!-- MAIN GRID -->
-<section class="main-grid">
+  <!-- ================= SINGLE PREDICT ================= -->
+  <div id="single-section">
+    <h2>Single Inventory Prediction</h2>
 
-    <!-- RESTOCK ALERT -->
-    <div class="card alert">
-        <h3>⚠ Restock Alert</h3>
-        <p><b>Item:</b> Wireless Mouse</p>
-        <p><b>Current Stock:</b> 5 units</p>
-        <p><b>Reorder Point:</b> 15 units</p>
-        <p><b>Recommended Restock:</b> 50 units</p>
-        <button class="danger-btn">ORDER NOW</button>
-    </div>
+    <form id="predictForm">
 
-    <!-- CHART PLACEHOLDER -->
-    <div class="card chart">
-        <h3>Demand & Stock Level Forecast (Next 14 Days)</h3>
-        <div class="chart-placeholder">
-            📈 Chart will be displayed here
-        </div>
-    </div>
+      <div><label>Category Encoded</label><input name="category_encoded" type="number" required></div>
+      <div><label>Daily Demand</label><input name="daily_demand" type="number" step="any" required></div>
+      <div><label>Demand Std Dev</label><input name="demand_std_dev" type="number" step="any" required></div>
 
-</section>
+      <div><label>Stock Level</label><input name="stock_level" type="number" required></div>
+      <div><label>Days of Stock Left</label><input name="days_of_stock_left" type="number" step="any" required></div>
+      <div><label>Stockout Risk</label><input name="stockout_risk" type="number" required></div>
 
-<!-- TABLE + METRICS -->
-<section class="bottom-grid">
+      <div><label>Lead Time (days)</label><input name="lead_time_days" type="number" required></div>
+      <div><label>Reorder Point</label><input name="reorder_point" type="number" required></div>
+      <div><label>Reorder Frequency (days)</label><input name="reorder_frequency_days" type="number" required></div>
 
-    <!-- TABLE -->
-    <div class="card table-card">
-        <h3>Items Needing Restock</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Item Name</th>
-                    <th>Current Stock</th>
-                    <th>Reorder Point</th>
-                    <th>Lead Time</th>
-                    <th>Recommended</th>
-                </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-        </table>
-        <button onclick="loadData()">Load Predictions</button>
-    </div>
+      <div><label>Item Popularity Score</label><input name="item_popularity_score" type="number" step="any" required></div>
+      <div><label>Total Orders Last Month</label><input name="total_orders_last_month" type="number" required></div>
+      <div><label>Stockout Count Last Month</label><input name="stockout_count_last_month" type="number" required></div>
 
-    <!-- METRICS -->
-    <div class="card metrics">
-        <h3>Key Metrics</h3>
-        <p>Daily Demand: <b>40 units</b></p>
-        <p>Inventory Turnover: <b>8.5</b></p>
-        <p>Stockouts Last Month: <b>6</b></p>
-    </div>
+      <div><label>Turnover Ratio</label><input name="turnover_ratio" type="number" step="any" required></div>
+      <div><label>Days Since Restock</label><input name="days_since_restock" type="number" required></div>
+      <div><label>Days to Expiry</label><input name="days_to_expiry" type="number" required></div>
 
-</section>
+      <div><label>Is Expired (0/1)</label><input name="is_expired" type="number" required></div>
+      <div><label>Unit Price</label><input name="unit_price" type="number" step="any" required></div>
+      <div><label>Holding Cost / Unit / Day</label><input name="holding_cost_per_unit_day" type="number" step="any" required></div>
 
-<script src="app.js"></script>
+      <button type="submit">Predict</button>
+    </form>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <!-- ================= BULK PREDICT ================= -->
+  <div id="bulk-section" class="hidden">
+    <h2>Bulk Prediction (CSV / Excel)</h2>
+
+    <p>
+      File must contain <b>18 columns</b> per row (order matters).  
+      Header names are ignored.
+    </p>
+
+    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
+    <br><br>
+    <button id="bulkPredictBtn">Upload & Predict</button>
+
+    <div class="result" id="bulkResult"></div>
+  </div>
+
+</div>
+
+<!-- CSV + Excel parser -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script>
+  const REQUIRED_COLS = 18;
+
+  // ----------- ELEMENT REFERENCES -----------
+  const tabSingle = document.getElementById("tab-single");
+  const tabBulk = document.getElementById("tab-bulk");
+
+  const singleSection = document.getElementById("single-section");
+  const bulkSection = document.getElementById("bulk-section");
+
+  const predictForm = document.getElementById("predictForm");
+  const result = document.getElementById("result");
+
+  const bulkPredictBtn = document.getElementById("bulkPredictBtn");
+  const fileInput = document.getElementById("fileInput");
+  const bulkResult = document.getElementById("bulkResult");
+
+  // ----------- TAB SWITCHING -----------
+  tabSingle.onclick = () => switchTab("single");
+  tabBulk.onclick = () => switchTab("bulk");
+
+  function switchTab(tab) {
+    singleSection.classList.toggle("hidden", tab !== "single");
+    bulkSection.classList.toggle("hidden", tab !== "bulk");
+
+    tabSingle.classList.toggle("active", tab === "single");
+    tabBulk.classList.toggle("active", tab === "bulk");
+  }
+
+  // ----------- SINGLE PREDICT -----------
+  predictForm.onsubmit = async (e) => {
+    e.preventDefault();
+
+    const data = Object.fromEntries(new FormData(predictForm).entries());
+
+    const res = await fetch("http://localhost:5000/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const out = await res.json();
+    result.innerText =
+      out.prediction !== undefined
+        ? "Prediction: " + out.prediction
+        : JSON.stringify(out, null, 2);
+  };
+
+  // ----------- BULK PREDICT -----------
+  bulkPredictBtn.onclick = () => {
+    const file = fileInput.files[0];
+    if (!file) {
+      alert("Please upload a CSV or Excel file");
+      return;
+    }
+
+    const ext = file.name.split(".").pop().toLowerCase();
+    ext === "csv" ? parseCSV(file) : parseExcel(file);
+  };
+
+  function sendBulk(rows) {
+    fetch("http://localhost:5000/predict-bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(rows)
+    })
+      .then(res => res.json())
+      .then(data => {
+        bulkResult.innerText = JSON.stringify(data, null, 2);
+      })
+      .catch(err => {
+        bulkResult.innerText = "Bulk prediction failed. Check console.";
+        console.error(err);
+      });
+  }
+
+  function parseCSV(file) {
+    Papa.parse(file, {
+      skipEmptyLines: true,
+      complete: ({ data }) => {
+        const rows = data.slice(1);
+
+        if (!rows.every(r => r.length === REQUIRED_COLS)) {
+          alert("Each row must have exactly 18 values");
+          return;
+        }
+
+        sendBulk(rows);
+      }
+    });
+  }
+
+  function parseExcel(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const wb = XLSX.read(e.target.result, { type: "binary" });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }).slice(1);
+
+      if (!rows.every(r => r.length === REQUIRED_COLS)) {
+        alert("Each row must have exactly 18 values");
+        return;
+      }
+
+      sendBulk(rows);
+    };
+    reader.readAsBinaryString(file);
+  }
+</script>
+
+
 </body>
 </html>
