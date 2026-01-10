@@ -4,23 +4,10 @@ import os
 import sys
 import pandas as pd
 
-@app.route('/inventory', methods=['GET'])
-def get_inventory():
-    df = pd.read_csv("dataset.csv")
 
-    # map dataset → frontend format
-    items = []
-    for i, row in df.iterrows():
-        items.append({
-            "item_id": int(i + 1),
-            "name": f"Item {i+1}",
-            "category": str(row["category_encoded"]),
-            "stock": int(row["stock_level"]),
-            "reorder": int(row["reorder_point"]),
-            "expiry": int(row["days_to_expiry"])
-        })
 
-    return jsonify(items)
+    
+
 
 # allow importing run_model from repo root
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -31,6 +18,56 @@ from run_model import predict_from_dict
 
 app = Flask(__name__, static_folder='.', template_folder='.')
 CORS(app)  # allow all origins (safe for dev)
+@app.route('/upload-csv', methods=['POST'])
+def upload_csv():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+
+    file = request.files['file']
+
+    try:
+        df = pd.read_csv(file)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+    df = df.head(50)
+
+    items = []
+    low_stock = 0
+    expiry_risk = 0
+    restock_alerts = 0
+    healthy = 0
+
+    for i, row in df.iterrows():
+        stock = int(row.get("stock_level", 0))
+        reorder = int(row.get("reorder_point", 0))
+        days_to_expiry = int(row.get("days_to_expiry", 999))
+
+        if stock <= reorder:
+            low_stock += 1
+            restock_alerts += 1
+        elif days_to_expiry <= 7:
+            expiry_risk += 1
+        else:
+            healthy += 1
+
+        items.append({
+            "item": row.get("item_id", f"Item {i+1}"),
+            "category": row.get("category", "Unknown"),
+            "stock": stock,
+            "reorder": reorder,
+            "expiry": days_to_expiry
+        })
+
+    return jsonify({
+        "summary": {
+            "low_stock": low_stock,
+            "expiry_risk": expiry_risk,
+            "restock_alerts": restock_alerts,
+            "healthy": healthy
+        },
+        "items": items
+    })
 
 @app.route('/', methods=['GET'])
 def index():

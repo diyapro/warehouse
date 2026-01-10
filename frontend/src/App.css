@@ -1,0 +1,233 @@
+.dashboard-bg {
+  min-height: 100vh;
+  background: linear-gradient(
+      rgba(245, 247, 250, 0.95),
+      rgba(245, 247, 250, 0.95)
+    ),
+    url("https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d");
+  background-size: cover;
+  padding-bottom: 40px;
+}
+
+/* TOP BAR */
+.topbar {
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: white;
+  padding: 26px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+/* KPI GRID */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 22px;
+  padding: 24px;
+}
+
+.kpi-card {
+  background: linear-gradient(135deg, #ffffff, #f8fafc);
+  border-radius: 16px;
+  padding: 22px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 18px 36px rgba(0,0,0,0.2);
+}
+
+.kpi-icon {
+  font-size: 34px;
+}
+
+.kpi-title {
+  font-size: 14px;
+  color: #555;
+}
+
+.kpi-value {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+/* KPI COLORS */
+.red { border-left: 6px solid #ef4444; }
+.orange { border-left: 6px solid #f97316; }
+.green { border-left: 6px solid #22c55e; }
+.purple { border-left: 6px solid #8b5cf6; }
+
+/* TABLE */
+.table-card {
+  background: white;
+  margin: 20px;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.12);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+tr:hover {
+  background: #f1f5f9;
+}
+
+/* VIEW MORE */
+.view-more {
+  margin-top: 12px;
+  text-align: right;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* MODAL */
+.modal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  background: #f8fafc;
+}
+
+.hoverable:hover {
+  background: #e0e7ff;
+}
+
+/* BADGES */
+.badge {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge.danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge.warning {
+  background: #ffedd5;
+  color: #c2410c;
+}
+/* COMPACT CSV UPLOAD BAR */
+.upload-bar {
+  background: white;
+  margin: 20px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.upload-label {
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.upload-btn {
+  background: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upload-btn:hover {
+  background: #1e40af;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #334155;
+}
+
+/* ================= ROW GRADIENT STATES ================= */
+
+/* Low stock - soft red gradient */
+.row-danger {
+  background: linear-gradient(
+    90deg,
+    rgba(239, 68, 68, 0.12),
+    rgba(255, 255, 255, 0.85)
+  );
+}
+
+/* Expiry risk - soft orange gradient */
+.row-warning {
+  background: linear-gradient(
+    90deg,
+    rgba(249, 115, 22, 0.14),
+    rgba(255, 255, 255, 0.85)
+  );
+}
+
+/* Healthy stock - soft green gradient */
+.row-healthy {
+  background: linear-gradient(
+    90deg,
+    rgba(34, 197, 94, 0.12),
+    rgba(255, 255, 255, 0.85)
+  );
+}
+
+/* Smooth hover enhancement */
+.row-danger:hover,
+.row-warning:hover,
+.row-healthy:hover {
+  filter: brightness(0.97);
+}
+/* ===== KPI CARD RICH COLOR FILLS ===== */
+
+.kpi-card.red {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.85),
+    rgba(220, 38, 38, 0.65)
+  );
+}
+
+.kpi-card.orange {
+  background: linear-gradient(
+    135deg,
+    rgba(249, 115, 22, 0.85),
+    rgba(234, 88, 12, 0.65)
+  );
+}
+
+.kpi-card.green {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.85),
+    rgba(22, 163, 74, 0.65)
+  );
+}
+
+.kpi-card.purple {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.85),
+    rgba(109, 40, 217, 0.65)
+  );
+}
