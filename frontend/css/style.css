@@ -1,0 +1,131 @@
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f4f7fb;
+  color: #1f2937;
+}
+
+/* HEADER */
+header {
+  background: linear-gradient(90deg, #0a4da2, #0f6fdc);
+  color: white;
+  padding: 20px 30px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+header p {
+  margin: 4px 0 0;
+  opacity: 0.9;
+}
+
+/* NAVBAR */
+nav {
+  background: white;
+  padding: 12px 30px;
+  display: flex;
+  gap: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+nav a {
+  text-decoration: none;
+  color: #0a4da2;
+  font-weight: 600;
+}
+
+/* KPI GRID */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 30px;
+}
+
+.kpi {
+  padding: 20px;
+  border-radius: 14px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.15);
+  transition: transform 0.2s;
+}
+
+.kpi:hover {
+  transform: translateY(-4px);
+}
+
+.kpi h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.kpi span {
+  font-size: 32px;
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
+
+/* COLORS */
+.red { background: #e74c3c; }
+.orange { background: #f39c12; }
+.green { background: #27ae60; }
+.blue { background: #3498db; }
+.purple { background: #8e44ad; }
+.dark { background: #34495e; }
+
+/* CARD */
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  margin: 30px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+th {
+  background: #eef2f7;
+  text-align: left;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  color: white;
+  font-size: 12px;
+}
+
+.badge.red { background: #e74c3c; }
+.badge.orange { background: #f39c12; }
+.badge.green { background: #27ae60; }
+
+/* BUTTON */
+button {
+  background: #0a4da2;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}

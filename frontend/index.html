@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Warehouse Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <h1>Warehouse Inventory Intelligence Dashboard</h1>
+  <p>AI-driven demand, stock & risk insights</p>
+</header>
+
+<div id="analysisStatus" style="margin: 15px 30px; font-size:14px;"></div>
+
+<nav>
+  <a href="index.html">Dashboard</a>
+  <a href="upload.html">Upload Inventory Data</a>
+</nav>
+
+<!-- KPI CARDS -->
+<section class="kpi-grid">
+
+  <div class="kpi red" onclick="location.href='alerts.html'">
+    <h3>Active Alerts</h3>
+    <span id="alertsCount">—</span>
+    <p>Stockout • Expiry • Low Stock</p>
+  </div>
+
+  <div class="kpi blue" onclick="location.href='demand.html'">
+    <h3>Predicted 7-Day Demand</h3>
+    <span id="totalDemand">—</span>
+    <p>Based on latest data</p>
+  </div>
+
+  <div class="kpi green" onclick="location.href='stock.html'">
+    <h3>Avg Days of Stock Left</h3>
+    <span id="avgStockDays">—</span>
+  </div>
+
+  <div class="kpi orange" onclick="location.href='expiry.html'">
+    <h3>Expiry Risk</h3>
+    <span id="expiryItems">—</span>
+  </div>
+
+  <div class="kpi purple" onclick="location.href='reorder.html'">
+    <h3>Reorder Required</h3>
+    <span id="reorderItems">—</span>
+  </div>
+
+  <div class="kpi dark" onclick="location.href='financial.html'">
+    <h3>Financial Risk</h3>
+    <span id="financialRisk">—</span>
+  </div>
+
+</section>
+
+<p style="margin:0 30px; font-size:13px; opacity:0.8;">
+  Metrics shown represent analytical insights derived from the latest uploaded inventory snapshot.
+</p>
+
+<!-- PRODUCT TABLE -->
+<div class="card">
+  <h2>Product-Level Summary</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Item ID</th>
+        <th>Predicted Demand (7d)</th>
+        <th>Current Stock</th>
+        <th>Days Left</th>
+        <th>Days to Expiry</th>
+        <th>Alert Status</th>
+        <th>Recommended Action</th>
+      </tr>
+    </thead>
+    <tbody id="productTable"></tbody>
+  </table>
+</div>
+
+<script src="js/dashboard.js?v=2"></script>
+
+</body>
+</html>
