@@ -4,16 +4,28 @@ import os
 import sys
 import pandas as pd
 
-# allow importing run_model from repo root
+# -----------------------------
+# Setup
+# -----------------------------
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from run_model import predict_from_dict
-LATEST_METRICS = None
-app = Flask(__name__, static_folder='.', template_folder='.')
-CORS(app)  # allow all origins (safe for dev)
 
+LATEST_METRICS = None
+
+app = Flask(__name__, static_folder='.', template_folder='.')
+
+CORS(
+    app,
+    resources={r"/*": {"origins": "http://127.0.0.1:5500"}},
+    supports_credentials=True
+)
+
+# -----------------------------
+# Routes
+# -----------------------------
 @app.route('/', methods=['GET'])
 def index():
     return send_from_directory('.', 'index.html')
@@ -22,200 +34,160 @@ def index():
 def static_files(filename):
     return send_from_directory('.', filename)
 
-FEATURES = [
-    "category_encoded",
-    "daily_demand",
-    "demand_std_dev",
-    "stock_level",
-    "days_of_stock_left",
-    "stockout_risk",
-    "lead_time_days",
-    "reorder_point",
-    "reorder_frequency_days",
-    "item_popularity_score",
-    "total_orders_last_month",
-    "stockout_count_last_month",
-    "turnover_ratio",
-    "days_since_restock",
-    "days_to_expiry",
-    "is_expired",
-    "unit_price",
-    "holding_cost_per_unit_day",
-]
-
-INT_FIELDS = {
-    "category_encoded",
-    "stockout_risk",
-    "is_expired",
-    "total_orders_last_month",
-    "stockout_count_last_month",
-}
-
-@app.route('/predict', methods=['POST'])
-def predict():
-    print("✅ /predict HIT")
-
-    if request.is_json:
-        data = request.get_json()
-    else:
-        data = request.form.to_dict()
-
-    if not isinstance(data, dict):
-        return jsonify({'error': 'Request body must be JSON or form data'}), 400
-
-    feature_dict = {}
-    missing = []
-    cast_errors = []
-
-    for f in FEATURES:
-        if f in data and data[f] != "":
-            try:
-                val = float(data[f])
-                if f in INT_FIELDS:
-                    val = int(val)
-                feature_dict[f] = val
-            except Exception:
-                cast_errors.append(f)
-        else:
-            missing.append(f)
-
-    if cast_errors:
-        return jsonify({'error': 'Invalid numeric fields', 'fields': cast_errors}), 400
-
-    if missing:
-        return jsonify({'error': 'Missing required fields', 'missing': missing}), 400
-
-    try:
-        prediction = predict_from_dict(feature_dict)
-        return jsonify({'prediction': prediction})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-# ===========================
-# 🔥 BULK PREDICTION ENDPOINT
-# ===========================
-@app.route('/predict-bulk', methods=['POST'])
-def predict_bulk():
-    print("✅ /predict-bulk HIT")
-
-    data = request.get_json()
-
-    if not isinstance(data, list):
-        return jsonify({
-            "error": "Input must be a JSON array of arrays"
-        }), 400
-
-    predictions = []
-    errors = []
-
-    for idx, row in enumerate(data):
-        if not isinstance(row, list):
-            errors.append({"index": idx, "error": "Each item must be an array"})
-            continue
-
-        if len(row) != len(FEATURES):
-            errors.append({
-                "index": idx,
-                "error": f"Expected {len(FEATURES)} values, got {len(row)}"
-            })
-            continue
-
-        try:
-            feature_dict = {}
-            for f, v in zip(FEATURES, row):
-                val = float(v)
-                if f in INT_FIELDS:
-                    val = int(val)
-                feature_dict[f] = val
-
-            pred = predict_from_dict(feature_dict)
-            predictions.append(pred)
-
-        except Exception as e:
-            errors.append({"index": idx, "error": str(e)})
-
-    return jsonify({
-        "predictions": predictions,
-        "errors": errors
-    })
-    
-
-@app.route("/analyze", methods=["POST"])
+# -----------------------------
+# ANALYZE CSV
+# -----------------------------
+@app.route("/analyze", methods=["POST", "OPTIONS"])
 def analyze():
     global LATEST_METRICS
+
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
 
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
-    file = request.files["file"]
-    df = pd.read_csv(file)
-    df = df.fillna(0)
+    df = pd.read_csv(request.files["file"])
 
-    print("📊 Received columns:", df.columns.tolist())
+    # -----------------------------
+    # Normalize column names
+    # -----------------------------
+    df.columns = (
+        df.columns
+        .str.strip()
+        .str.lower()
+        .str.replace(" ", "_")
+    )
 
+    # -----------------------------
+    # ADD item_id (🔥 REQUIRED)
+    # -----------------------------
+    df["item_id"] = df.index.astype(int)
+
+    # -----------------------------
+    # Column mapping
+    # -----------------------------
+    COLUMN_MAP = {
+        "stock": "stock_level",
+        "current_stock": "stock_level",
+        "reorderpoint": "reorder_point",
+        "demand": "daily_demand",
+        "price": "unit_price",
+        "expiry": "expiry_date",
+        "expiry_date": "expiry_date",
+        "restock_date": "restock_date",
+        "last_restock_date": "restock_date",
+    }
+
+    df.rename(
+        columns={c: COLUMN_MAP[c] for c in df.columns if c in COLUMN_MAP},
+        inplace=True
+    )
+
+    # -----------------------------
+    # Derived columns
+    # -----------------------------
+    today = pd.Timestamp.today()
+
+    if "days_to_expiry" not in df.columns:
+        if "expiry_date" in df.columns:
+            df["expiry_date"] = pd.to_datetime(df["expiry_date"], errors="coerce")
+            df["days_to_expiry"] = (df["expiry_date"] - today).dt.days
+        else:
+            df["days_to_expiry"] = 999
+
+    if "days_of_stock_left" not in df.columns:
+        if "daily_demand" in df.columns and "stock_level" in df.columns:
+            df["days_of_stock_left"] = df["stock_level"] / df["daily_demand"]
+        else:
+            df["days_of_stock_left"] = 0
+
+    # -----------------------------
+    # Required validation
+    # -----------------------------
+    REQUIRED_COLS = [
+        "stock_level",
+        "reorder_point",
+        "days_to_expiry",
+        "days_of_stock_left",
+        "daily_demand",
+        "unit_price"
+    ]
+
+    missing = [c for c in REQUIRED_COLS if c not in df.columns]
+    if missing:
+        return jsonify({
+            "error": "Missing required columns",
+            "missing": missing,
+            "found": df.columns.tolist()
+        }), 400
+
+    # -----------------------------
+    # KPIs
+    # -----------------------------
+    alerts = int((df["stock_level"] < df["reorder_point"]).sum())
+    expiry = int((df["days_to_expiry"] <= 30).sum())
+    avg_days = round(df["days_of_stock_left"].mean(), 2)
+    total_demand = int(df["daily_demand"].sum() * 7)
+    reorder_count = alerts
+    financial_risk = int((df["stock_level"] * df["unit_price"]).sum())
+
+    # -----------------------------
+    # EXPIRY RISK CLASSIFICATION
+    # -----------------------------
+    df["expiry_risk"] = pd.cut(
+        df["days_to_expiry"],
+        bins=[-float("inf"), 7, 30, float("inf")],
+        labels=["Critical", "High", "Low"]
+    )
+
+    # -----------------------------
+    # STOCK SEVERITY (🔥 REQUIRED)
+    # -----------------------------
+    df["severity"] = pd.cut(
+        df["days_of_stock_left"],
+        bins=[-float("inf"), 3, 7, float("inf")],
+        labels=["Critical", "High", "Normal"]
+    )
+
+    # -----------------------------
+    # Product table
+    # -----------------------------
     items = []
-    preview_df = df.head(50)
-
-    for idx, row in preview_df.iterrows():
-
-        # 🔮 Predict demand
-        try:
-            feature_dict = {}
-            for f in FEATURES:
-                feature_dict[f] = float(row[f]) if f in df.columns else 0
-                if f in INT_FIELDS:
-                    feature_dict[f] = int(feature_dict[f])
-
-            predicted_demand = round(predict_from_dict(feature_dict), 1)
-        except Exception:
-            predicted_demand = 0
-
-        current_stock = int(row["stock_level"]) if "stock_level" in df.columns else 0
-        days_left = round(float(row["days_of_stock_left"]), 1) if "days_of_stock_left" in df.columns else 0
-        days_to_expiry = int(row["days_to_expiry"]) if "days_to_expiry" in df.columns else 0
-        reorder_point = float(row["reorder_point"]) if "reorder_point" in df.columns else 0
-
+    for _, row in df.iterrows():
         items.append({
-            "item_id": int(idx),
-            "predicted_demand": predicted_demand,
-            "current_stock": current_stock,
-            "days_left": days_left,
-            "days_to_expiry": days_to_expiry,
-            "alert": "YES" if current_stock < reorder_point else "NO",
-            "action": "REORDER" if current_stock < reorder_point else "OK"
+            "item_id": int(row["item_id"]),
+            "predicted_demand": round(row["daily_demand"] * 7, 1),
+            "current_stock": int(row["stock_level"]),
+            "days_left": round(row["days_of_stock_left"], 1),
+            "days_to_expiry": int(row["days_to_expiry"]),
+            "expiry_risk": str(row["expiry_risk"]),
+            "severity": str(row["severity"]),
+            "alert": "⚠️ Low Stock" if row["stock_level"] < row["reorder_point"] else "OK",
+            "action": "Reorder" if row["stock_level"] < row["reorder_point"] else "Monitor"
         })
 
-    # 📊 KPI aggregates
     LATEST_METRICS = {
-        "alerts": sum(1 for i in items if i["action"] == "REORDER"),
-        "expiryCount": sum(1 for i in items if i["days_to_expiry"] <= 7),
-        "avgDays": round(
-            sum(i["days_left"] for i in items) / len(items), 1
-        ) if items else 0,
-        "financialRisk": int(
-            sum(
-                row["stock_level"] * row["unit_price"]
-                for _, row in preview_df.iterrows()
-                if "unit_price" in df.columns
-            )
-        ) if "unit_price" in df.columns else 0,
-        "items": items,
-        "totalDemand": round(sum(i["predicted_demand"] for i in items), 1),
-        "reorderCount": sum(1 for i in items if i["action"] == "REORDER")
+        "alerts": alerts,
+        "avgDays": avg_days,
+        "expiryCount": expiry,
+        "totalDemand": total_demand,
+        "reorderCount": reorder_count,
+        "financialRisk": financial_risk,
+        "items": items
     }
 
     return jsonify(LATEST_METRICS)
 
-
-
+# -----------------------------
+# DASHBOARD FETCH
+# -----------------------------
 @app.route("/analyze-latest", methods=["GET"])
 def analyze_latest():
     if not LATEST_METRICS:
         return jsonify({"error": "No analysis available yet"}), 404
     return jsonify(LATEST_METRICS)
 
-
+# -----------------------------
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
