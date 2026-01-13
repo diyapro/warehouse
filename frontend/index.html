@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Warehouse Dashboard</title>
+
+  <!-- Responsive -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Styles -->
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
 <header>
@@ -12,14 +18,16 @@
   <p>AI-driven demand, stock & risk insights</p>
 </header>
 
+<!-- Status message -->
 <div id="analysisStatus" style="margin: 15px 30px; font-size:14px;"></div>
 
+<!-- Navigation -->
 <nav>
   <a href="index.html">Dashboard</a>
   <a href="upload.html">Upload Inventory Data</a>
 </nav>
 
-<!-- KPI CARDS -->
+<!-- ================= KPI CARDS ================= -->
 <section class="kpi-grid">
 
   <div class="kpi red" onclick="location.href='alerts.html'">
@@ -60,9 +68,10 @@
   Metrics shown represent analytical insights derived from the latest uploaded inventory snapshot.
 </p>
 
-<!-- PRODUCT TABLE -->
+<!-- ================= PRODUCT TABLE ================= -->
 <div class="card">
   <h2>Product-Level Summary</h2>
+
   <table>
     <thead>
       <tr>
@@ -75,10 +84,20 @@
         <th>Recommended Action</th>
       </tr>
     </thead>
-    <tbody id="productTable"></tbody>
+    <tbody id="productTable">
+      <!-- Rows injected by dashboard.js -->
+    </tbody>
   </table>
+
+  <!-- View more button (must be OUTSIDE table) -->
+  <div style="text-align:center;">
+    <button id="viewMoreBtn" style="display:none; margin:20px;">
+      View More
+    </button>
+  </div>
 </div>
 
+<!-- ================= JS ================= -->
 <script src="js/dashboard.js?v=2"></script>
 
 </body>

@@ -1,78 +1,76 @@
+/* ===============================
+   DASHBOARD VERSION 2026-01-12
+   =============================== */
+
+let allItems = [];
+let visibleCount = 50;
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DASHBOARD VERSION 2026-01-12");
 
   fetch("http://127.0.0.1:5000/analyze-latest")
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("No analysis data available yet");
-      }
-      return response.json();
+    .then(r => {
+      if (!r.ok) throw new Error("No analysis data");
+      return r.json();
     })
     .then(data => {
       console.log("Metrics received:", data);
 
       const safeSet = (id, value) => {
         const el = document.getElementById(id);
-        if (el) {
-          el.innerText = value;
-        } else {
-          console.warn("Missing element:", id);
-        }
+        if (el) el.innerText = value ?? "—";
       };
 
-      // KPI updates (keys EXACTLY match backend)
-      safeSet("alertsCount", data.alerts ?? "—");
-      safeSet("avgStockDays", data.avgDays ?? "—");
-      safeSet("expiryItems", (data.expiryCount ?? 0) + " Items");
+      // KPI CARDS
+      safeSet("alertsCount", data.alerts);
+      safeSet("totalDemand", data.totalDemand);
+      safeSet("avgStockDays", data.avgDays);
+      safeSet("expiryItems", data.expiryCount + " Items");
+      safeSet("reorderItems", data.reorderCount);
       safeSet(
         "financialRisk",
-        "₹" + ((data.financialRisk ?? 0) / 100000).toFixed(1) + "L"
+        "₹" + (data.financialRisk / 100000).toFixed(1) + "L"
       );
 
-      // Placeholders (backend not implemented yet)
-     safeSet("totalDemand", data.totalDemand ?? "—");
-     safeSet("reorderItems", data.reorderCount ?? "—");
-
-      /* ===============================
-         ✅ ADDED: PRODUCT TABLE RENDERING
-         =============================== */
-
-      const table = document.getElementById("productTable");
-
-      if (table) {
-        table.innerHTML = "";
-
-        if (Array.isArray(data.items) && data.items.length > 0) {
-          data.items.forEach(item => {
-            const row = `
-              <tr>
-                <td>${item.item_id}</td>
-                <td>—</td>
-                <td>${item.current_stock}</td>
-                <td>${item.days_left}</td>
-                <td>${item.days_to_expiry}</td>
-                <td>${item.alert}</td>
-                <td>${item.action}</td>
-              </tr>
-            `;
-            table.insertAdjacentHTML("beforeend", row);
-          });
-        } else {
-          table.innerHTML = `
-            <tr>
-              <td colspan="7" style="text-align:center; opacity:0.7;">
-                Product-level data will appear after model integration
-              </td>
-            </tr>
-          `;
-        }
-      }
+      // TABLE
+      allItems = data.items || [];
+      visibleCount = 50;
+      renderTable();
     })
-    .catch(error => {
-      console.error("Dashboard update failed:", error);
-      const status = document.getElementById("analysisStatus");
-      if (status) {
-        status.innerText = "⚠️ Please upload a dataset to view analysis.";
-      }
+    .catch(err => {
+      console.error(err);
+      document.getElementById("analysisStatus").innerText =
+        "⚠️ Please upload inventory data first.";
     });
 });
+
+function renderTable() {
+  const table = document.getElementById("productTable");
+  const btn = document.getElementById("viewMoreBtn");
+
+  table.innerHTML = "";
+
+  allItems.slice(0, visibleCount).forEach(item => {
+    table.insertAdjacentHTML(
+      "beforeend",
+      `
+      <tr>
+        <td>${item.item_id}</td>
+        <td>${item.predicted_demand}</td>
+        <td>${item.current_stock}</td>
+        <td>${item.days_left}</td>
+        <td>${item.days_to_expiry}</td>
+        <td>${item.alert}</td>
+        <td>${item.action}</td>
+      </tr>
+      `
+    );
+  });
+
+  btn.style.display = visibleCount >= allItems.length ? "none" : "block";
+}
+
+document.getElementById("viewMoreBtn").onclick = () => {
+  visibleCount += 50;
+  renderTable();
+};
